@@ -3,3 +3,5 @@ Presentation_Scripts.txt
 __pycache__/
 *.pyc
 .env
+
+~$*.pptx
