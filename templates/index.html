@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DMS Functions Explorer · Digit Recognition AI</title>
+    <meta name="description" content="Visualize Discrete Math functions live on a real ML model. Draw a digit and watch the neural network fire in real-time.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <!-- ── HEADER ── -->
+    <header class="main-header">
+        <div class="header-inner">
+            <div class="header-left">
+                <span class="pill-badge">VTU · DMS · Group 9 · Module 3</span>
+                <h1>Functions in Machine Learning</h1>
+                <p class="header-sub">Draw a digit → Watch the neural network classify it live</p>
+            </div>
+            <div class="header-right">
+                <div class="team-card">
+                    <p class="team-label">Team Members</p>
+                    <div class="team-members">
+                        <span>Vignesh B S</span>
+                        <span>Rohit Maiya M</span>
+                        <span>Sanskar Patil</span>
+                        <span>Shailesh Nayak</span>
+                        <span>Shreenivas CS</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ── CONCEPT STRIP ── -->
+    <div class="concept-strip">
+        <div class="concept-strip-inner">
+            <div class="concept-chip active" data-concept="plain">
+                <span class="chip-num">1</span> Plain Function
+            </div>
+            <div class="chip-divider">→</div>
+            <div class="concept-chip" data-concept="composition">
+                <span class="chip-num">2</span> Composition
+            </div>
+            <div class="chip-divider">→</div>
+            <div class="concept-chip" data-concept="surjective">
+                <span class="chip-num">3</span> Surjective
+            </div>
+            <div class="chip-divider">→</div>
+            <div class="concept-chip" data-concept="injective">
+                <span class="chip-num">4</span> Injective
+            </div>
+            <div class="chip-divider">→</div>
+            <div class="concept-chip" data-concept="inverse">
+                <span class="chip-num">5</span> Inverse
+            </div>
+        </div>
+    </div>
+
+    <!-- ── MAIN LAYOUT ── -->
+    <main class="main-grid">
+
+        <!-- ── LEFT COLUMN: DRAWING ── -->
+        <section class="card draw-card">
+            <div class="card-header">
+                <div class="card-header-icon">✍️</div>
+                <div>
+                    <h2>Draw a Digit (0–9)</h2>
+                    <p class="card-sub mono">Domain: ℝ⁶⁴ → Codomain: {0,1,…,9}</p>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="concept-callout">
+                    <strong>Plain Function:</strong> Every element in the domain maps to <em>exactly one</em> element in the codomain. Your drawing → one digit prediction.
+                </div>
+                <div class="canvas-wrap">
+                    <canvas id="drawing-canvas" width="280" height="280"></canvas>
+                    <div class="grid-lines"></div>
+                    <div class="canvas-hint" id="canvas-hint">Draw here</div>
+                </div>
+                <div class="btn-row">
+                    <button id="clear-btn" class="btn btn-ghost">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 .49-4"></path></svg>
+                        Clear
+                    </button>
+                    <button id="predict-btn" class="btn btn-primary">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        Evaluate f(x)
+                    </button>
+                </div>
+
+                <!-- RESULT -->
+                <div class="result-row" id="result-box">
+                    <div class="result-left">
+                        <div class="result-label">f(drawing)</div>
+                        <div class="result-digit" id="pred-digit">?</div>
+                    </div>
+                    <div class="result-right">
+                        <div class="result-label">Status</div>
+                        <div class="result-status" id="pred-status">Draw a digit and evaluate</div>
+                        <div class="result-conf" id="pred-conf"></div>
+                    </div>
+                </div>
+
+                <!-- DOWNSAMPLED PREVIEW -->
+                <div class="preview-row">
+                    <div class="preview-item">
+                        <div class="preview-label">Your Input (8×8)</div>
+                        <canvas id="downscaled-canvas" width="80" height="80" class="preview-canvas"></canvas>
+                    </div>
+                    <div class="preview-arrow">→</div>
+                    <div class="preview-item">
+                        <div class="preview-label">f⁻¹(y) Ideal Shape</div>
+                        <canvas id="inverse-canvas" width="80" height="80" class="preview-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── CENTER COLUMN: NETWORK ── -->
+        <section class="card network-card">
+            <div class="card-header">
+                <div class="card-header-icon">🧠</div>
+                <div>
+                    <h2>Neural Network Flow</h2>
+                    <p class="card-sub mono">f(x) = (f₃ ∘ f₂ ∘ f₁)(x)</p>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="concept-callout accent-purple">
+                    <strong>Composition:</strong> Each layer is a function. The neural network chains them: Output = f₃(f₂(f₁(Input))). This is function composition.
+                </div>
+                <div class="network-vis">
+                    <!-- Input Layer -->
+                    <div class="net-layer" id="layer-input">
+                        <div class="net-layer-label">
+                            <span>Input x</span>
+                            <span class="mono text-muted">64 features</span>
+                        </div>
+                        <div class="node-grid input-nodes"></div>
+                    </div>
+                    <div class="net-arrow-wrap">
+                        <div class="net-arrow-line"></div>
+                        <div class="net-arrow-pill">f₁ · ReLU · 32 units</div>
+                    </div>
+                    <!-- H1 -->
+                    <div class="net-layer" id="layer-h1">
+                        <div class="net-layer-label">
+                            <span>Hidden h₁</span>
+                            <span class="mono text-muted">32 neurons</span>
+                        </div>
+                        <div class="node-row h1-nodes"></div>
+                    </div>
+                    <div class="net-arrow-wrap">
+                        <div class="net-arrow-line"></div>
+                        <div class="net-arrow-pill">f₂ · ReLU · 16 units</div>
+                    </div>
+                    <!-- H2 -->
+                    <div class="net-layer" id="layer-h2">
+                        <div class="net-layer-label">
+                            <span>Hidden h₂</span>
+                            <span class="mono text-muted">16 neurons</span>
+                        </div>
+                        <div class="node-row h2-nodes"></div>
+                    </div>
+                    <div class="net-arrow-wrap">
+                        <div class="net-arrow-line"></div>
+                        <div class="net-arrow-pill">f₃ · Softmax · 10 classes</div>
+                    </div>
+                    <!-- Output Layer -->
+                    <div class="net-layer" id="layer-output">
+                        <div class="net-layer-label">
+                            <span>Output ŷ</span>
+                            <span class="mono text-muted">10 classes</span>
+                        </div>
+                        <div class="node-row output-nodes"></div>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <p class="info-title">🕊️ Pigeonhole Principle</p>
+                    <p>We are mapping <strong>2⁶⁴ possible inputs</strong> → just <strong>10 output classes</strong>. Since the domain is astronomically larger than the codomain, many distinct drawings <em>must</em> produce the same prediction. Collisions are mathematically guaranteed.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── RIGHT COLUMN: ANALYSIS ── -->
+        <section class="card analysis-card">
+            <div class="card-header">
+                <div class="card-header-icon">📊</div>
+                <div>
+                    <h2>Function Analysis</h2>
+                    <p class="card-sub mono">Surjective · Injective · Inverse</p>
+                </div>
+            </div>
+            <div class="card-body">
+
+                <!-- Surjective -->
+                <div class="analysis-block">
+                    <div class="analysis-block-header">
+                        <div class="ab-left">
+                            <span class="analysis-num">3</span>
+                            <div>
+                                <p class="ab-title">Surjective (Onto)</p>
+                                <p class="ab-sub mono">Range = Codomain</p>
+                            </div>
+                        </div>
+                        <span class="status-pill" id="surj-pill">Checking…</span>
+                    </div>
+                    <div class="concept-callout mb-sm">
+                        <strong>Surjective:</strong> Every digit in {0–9} is reachable. The Softmax layer always assigns non-zero probability to every class.
+                    </div>
+                    <div class="chart-wrap">
+                        <canvas id="prob-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Injective -->
+                <div class="analysis-block">
+                    <div class="analysis-block-header">
+                        <div class="ab-left">
+                            <span class="analysis-num purple">4</span>
+                            <div>
+                                <p class="ab-title">Injective (1-to-1)</p>
+                                <p class="ab-sub mono">f(a) = f(b) ⟹ a = b</p>
+                            </div>
+                        </div>
+                        <span class="status-pill purple" id="inj-pill">Not Injective</span>
+                    </div>
+                    <div class="concept-callout mb-sm">
+                        <strong>Injective:</strong> The PCA scatter shows distinct digit clusters in 2D space. Your input (⭐) is plotted after evaluation.
+                    </div>
+                    <div class="chart-wrap">
+                        <canvas id="embed-chart"></canvas>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

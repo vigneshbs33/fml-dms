@@ -1,0 +1,5 @@
+DMS_Study_Guide_and_Viva_QA.md
+Presentation_Scripts.txt
+__pycache__/
+*.pyc
+.env
